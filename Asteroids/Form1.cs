@@ -17,17 +17,21 @@ namespace Asteroids
         int shipSpeed = 4;
 
         List<Rectangle> rocks = new List<Rectangle>();
-        List<int> rockSpeeds = new List<int>();
+        List<int> rockSpeedX = new List<int>();
+        List<int> rockSpeedY = new List<int>();
 
         List<Rectangle> bullets = new List<Rectangle>();
         List<int> bulletSpeeds = new List<int>();
 
 
-        bool ADown = false;
-        bool DDown = false;
+        bool leftDown = false;
+        bool rightDown = false;
+        bool upDown = false;
 
         int score = 0;
         int time = 750;
+
+        int turn = 0;
 
         SolidBrush whiteBrush = new SolidBrush(Color.White);
 
@@ -36,7 +40,7 @@ namespace Asteroids
         int randomL = 0;
         int randomW = 0;
 
-        Image playerImage = Properties.Resources.shipTri;
+        Image playerImage = Properties.Resources.funnyShip;
 
         public Form1()
         {
@@ -48,11 +52,14 @@ namespace Asteroids
         {
             switch (e.KeyCode)
             {
-                case Keys.A:
-                    ADown = true;
+                case Keys.Left:
+                    leftDown = true;
                     break;
-                case Keys.D:
-                    DDown = true;
+                case Keys.Right:
+                    rightDown = true;
+                    break;
+                case Keys.Up:
+                    upDown = true;
                     break;
             }
         }
@@ -60,24 +67,37 @@ namespace Asteroids
         {
             switch (e.KeyCode)
             {
-                case Keys.A:
-                    ADown = false;
+                case Keys.Left:
+                    leftDown = false;
                     break;
-                case Keys.D:
-                    DDown = false;
+                case Keys.Right:
+                    rightDown = false;
                     break; //poo 
+                case Keys.Up:
+                    upDown = false;
+                    break; 
             }
         }
         private void gameTimer_Tick(object sender, EventArgs e)
         {
             //Movement
-            if (ADown == true && ship.X > 0)
+            if (leftDown == true)
             {
-                ship.X -= shipSpeed;
+                turn++;
             }
-            if (DDown == true && ship.X < this.Width - ship.Width)
+            if (rightDown == true )
             {
-                ship.X += shipSpeed;
+                turn--;
+            }
+
+            if (upDown == true && ship.Y > 0)
+            {
+                ship.Y -= shipSpeed;
+            }
+
+            if (turn < 0)
+            {
+                turn = 359;
             }
 
             //Making rocks
@@ -85,11 +105,11 @@ namespace Asteroids
 
             for (int i = 0; i < rocks.Count; i++)
             {
-                int x = rocks[i].X + rockSpeeds[i];
+                int x = rocks[i].X + rockSpeedX[i];
                 rocks[i] = new Rectangle(x, rocks[i].Y, 30, 28);
 
-                int y = rocks[i].Y + rockSpeeds[i];
-                y = rocks[i].Y + rockSpeeds[i];
+                int y = rocks[i].Y + rockSpeedY[i];
+                y = rocks[i].Y + rockSpeedY[i];
                 rocks[i] = new Rectangle(x, rocks[i].Y, 30, 28);
             }
 
@@ -97,13 +117,15 @@ namespace Asteroids
             {
                 randomL = randGen.Next(20, 550);
                 rocks.Add(new Rectangle(-14, randomL, 30, 28));
-                rockSpeeds.Add(randGen.Next(2, 5));
+                rockSpeedX.Add(randGen.Next(2, 5));
+                rockSpeedY.Add(randGen.Next(2, 5) * -1);
             }
             else if (randValue > 98)
             {
                 randomW = randGen.Next(20, 550);
-                rocks.Add(new Rectangle(this.Height, randomW, 30, 28));
-                rockSpeeds.Add(randGen.Next(2, 5) * -1);
+                rocks.Add(new Rectangle(this.Height, randomW, 30, 28)); //poo
+                rockSpeedY.Add(randGen.Next(2, 5) * -1);
+                rockSpeedX.Add(randGen.Next(2, 5));
             }
 
 
@@ -112,13 +134,21 @@ namespace Asteroids
         }
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
-
-            //e.Graphics.FillRectangle(whiteBrush, ship);
-            e.Graphics.DrawImage(playerImage, ship);
+            e.Graphics.TranslateTransform(ship.X - ship.Width / 2, ship.Y - ship.Height / 2);
+            e.Graphics.RotateTransform(turn);
+            e.Graphics.DrawImage(playerImage, 0,0 , ship.Width, ship.Height);
+            e.Graphics.ResetTransform();
 
             for (int i = 0; i < rocks.Count; i++)
             {
                 e.Graphics.FillRectangle(whiteBrush, rocks[i]);
+                int rise = 0;
+                int run = 0;
+                int totalSum = 0;
+
+
+
+
             }
             
         }
