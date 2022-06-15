@@ -14,7 +14,13 @@ namespace Asteroids
     public partial class Form1 : Form
     {
         Rectangle ship = new Rectangle(250, 250, 30, 30);
-        int shipSpeed = 4;
+        int shipSpeed = 10;
+        int shipXSpeed = 0;
+        int shipYSpeed = 0;
+
+        List<Rectangle> bullet = new List<Rectangle>();
+        List<Rectangle> bulletSpeedX = new List<Rectangle>();
+        List<Rectangle> bulletSppedY = new List<Rectangle>();
 
         List<Rectangle> rocks = new List<Rectangle>();
         List<int> rockSpeedX = new List<int>();
@@ -30,6 +36,7 @@ namespace Asteroids
 
         int score = 0;
         int time = 750;
+        int lives = 3;
 
         int turn = 0;
 
@@ -41,6 +48,7 @@ namespace Asteroids
         int randomW = 0;
 
         Image playerImage = Properties.Resources.funnyShip;
+        Image rocksImage = Properties.Resources.meteor;
 
         public Form1()
         {
@@ -83,16 +91,39 @@ namespace Asteroids
             //Movement
             if (leftDown == true)
             {
-                turn++;
+                turn -= 2;
             }
             if (rightDown == true )
             {
-                turn--;
+                turn += 2;
+
             }
 
-            if (upDown == true && ship.Y > 0)
+            if (turn <= 90)
             {
-                ship.Y -= shipSpeed;
+                shipYSpeed = -Convert.ToInt16(shipSpeed * Math.Cos(Convert.ToDouble(turn)));
+                shipXSpeed = -Convert.ToInt16(shipSpeed * Math.Sin(Convert.ToDouble(turn)));
+            }
+            else if (turn <= 180)
+            {
+                shipYSpeed = Convert.ToInt16(shipSpeed * Math.Sin(Convert.ToDouble(turn)));
+                shipXSpeed = Convert.ToInt16(shipSpeed * Math.Cos(Convert.ToDouble(turn)));
+            }
+            else if (turn <= 270)
+            {
+                shipYSpeed = -Convert.ToInt16(shipSpeed * Math.Sin(Convert.ToDouble(turn)));
+                shipXSpeed = -Convert.ToInt16(shipSpeed * Math.Cos(Convert.ToDouble(turn)));
+            }
+            else if (turn < 360)
+            {
+                shipYSpeed = Convert.ToInt16(shipSpeed * Math.Cos(Convert.ToDouble(turn)));
+                shipXSpeed = Convert.ToInt16(shipSpeed * Math.Sin(Convert.ToDouble(turn)));
+            }
+
+            if (upDown == true && ship.Y > 15)
+            {
+                ship.X += shipXSpeed;
+                ship.Y += shipYSpeed;
             }
 
             if (turn < 0)
@@ -113,6 +144,7 @@ namespace Asteroids
                 rocks[i] = new Rectangle(x, rocks[i].Y, 30, 28);
             }
 
+            //Moving Rocks 
             if (randValue < 2)
             {
                 randomL = randGen.Next(20, 550);
@@ -128,29 +160,48 @@ namespace Asteroids
                 rockSpeedX.Add(randGen.Next(2, 5));
             }
 
+            //Interacts and Removing rocks
+            for (int i = 0; i < rocks.Count; i++)
+            {
 
+                if (ship.IntersectsWith(rocks[i]))
+                {
+                    rocks.RemoveAt(i);
+                    ship.X = 250;
+                    ship.Y = 250;
+                    lives--;
+                    score -= 50;
+                }
+
+            }
+
+            //Game Timer
+            time--;
+            if (time < 0)
+            {
+                gameTimer.Stop();
+            }
 
             Refresh();
         }
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
+            //Rotate and Spawn ship image 
             e.Graphics.TranslateTransform(ship.X - ship.Width / 2, ship.Y - ship.Height / 2);
             e.Graphics.RotateTransform(turn);
             e.Graphics.DrawImage(playerImage, 0,0 , ship.Width, ship.Height);
             e.Graphics.ResetTransform();
 
+            //Draw Rocks
             for (int i = 0; i < rocks.Count; i++)
             {
                 e.Graphics.FillRectangle(whiteBrush, rocks[i]);
-                int rise = 0;
-                int run = 0;
-                int totalSum = 0;
+                //e.Graphics.DrawImage
 
-
-
+                
 
             }
-            
+
         }
     }
 }
