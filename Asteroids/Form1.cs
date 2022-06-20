@@ -13,29 +13,33 @@ namespace Asteroids
 {
     public partial class Form1 : Form
     {
-        Rectangle ship = new Rectangle(250, 250, 30, 30);
-        int shipSpeed = 10;
-        int shipXSpeed = 0;
-        int shipYSpeed = 0;
+
+        float shipY = 250;
+        float shipX = 250;
+
+        int shipSpeed = 4;
+        double xSpeed = 1;
+        double ySpeed = 1;
+
+        int shipAngle = 10;
+        float thetaAngle = 0;
 
         List<Rectangle> bullet = new List<Rectangle>();
-        List<Rectangle> bulletSpeedX = new List<Rectangle>();
-        List<Rectangle> bulletSppedY = new List<Rectangle>();
+        List<int> bulletSpeedX = new List<int>();
+        List<int> bulletSpeedY = new List<int>();
 
         List<Rectangle> rocks = new List<Rectangle>();
         List<int> rockSpeedX = new List<int>();
         List<int> rockSpeedY = new List<int>();
 
-        List<Rectangle> bullets = new List<Rectangle>();
-        List<int> bulletSpeeds = new List<int>();
-
 
         bool leftDown = false;
         bool rightDown = false;
         bool upDown = false;
+        bool spaceBar = false;
 
         int score = 0;
-        int time = 750;
+        int time = 1500;
         int lives = 3;
 
         int turn = 0;
@@ -69,6 +73,9 @@ namespace Asteroids
                 case Keys.Up:
                     upDown = true;
                     break;
+                case Keys.Space:
+                    spaceBar = true;
+                    break;
             }
         }
         private void Form1_KeyUp(object sender, KeyEventArgs e)
@@ -83,47 +90,35 @@ namespace Asteroids
                     break; //poo 
                 case Keys.Up:
                     upDown = false;
-                    break; 
+                    break;
+                case Keys.Space:
+                    spaceBar = false;
+                    break;
             }
         }
         private void gameTimer_Tick(object sender, EventArgs e)
         {
-            //Movement
-            if (leftDown == true)
+            ///Movement
+            if (rightDown)
             {
-                turn -= 2;
+                shipAngle += 5;
             }
-            if (rightDown == true )
+            if (leftDown)
             {
-                turn += 2;
-
-            }
-
-            if (turn <= 90)
-            {
-                shipYSpeed = -Convert.ToInt16(shipSpeed * Math.Cos(Convert.ToDouble(turn)));
-                shipXSpeed = -Convert.ToInt16(shipSpeed * Math.Sin(Convert.ToDouble(turn)));
-            }
-            else if (turn <= 180)
-            {
-                shipYSpeed = Convert.ToInt16(shipSpeed * Math.Sin(Convert.ToDouble(turn)));
-                shipXSpeed = Convert.ToInt16(shipSpeed * Math.Cos(Convert.ToDouble(turn)));
-            }
-            else if (turn <= 270)
-            {
-                shipYSpeed = -Convert.ToInt16(shipSpeed * Math.Sin(Convert.ToDouble(turn)));
-                shipXSpeed = -Convert.ToInt16(shipSpeed * Math.Cos(Convert.ToDouble(turn)));
-            }
-            else if (turn < 360)
-            {
-                shipYSpeed = Convert.ToInt16(shipSpeed * Math.Cos(Convert.ToDouble(turn)));
-                shipXSpeed = Convert.ToInt16(shipSpeed * Math.Sin(Convert.ToDouble(turn)));
+                shipAngle -= 5;
             }
 
-            if (upDown == true && ship.Y > 15)
+            //theta measure for angle of fire, (float uses less memory)
+            thetaAngle = (90 - shipAngle);
+
+            // determine the end point for each hand (result must be a double)
+            xSpeed = Math.Cos(thetaAngle * Math.PI / 180.0);
+            ySpeed = Math.Sin(thetaAngle * Math.PI / 180.0);
+
+            if (upDown)
             {
-                ship.X += shipXSpeed;
-                ship.Y += shipYSpeed;
+                shipX += (float)xSpeed * shipSpeed;
+                shipY -= (float)ySpeed * shipSpeed;
             }
 
             if (turn < 0)
@@ -131,7 +126,7 @@ namespace Asteroids
                 turn = 359;
             }
 
-            //Making rocks
+            ///Making rocks
             randValue = randGen.Next(1, 101);
 
             for (int i = 0; i < rocks.Count; i++)
@@ -141,10 +136,10 @@ namespace Asteroids
 
                 int y = rocks[i].Y + rockSpeedY[i];
                 y = rocks[i].Y + rockSpeedY[i];
-                rocks[i] = new Rectangle(x, rocks[i].Y, 30, 28);
+                rocks[i] = new Rectangle(rocks[i].X, y, 30, 28);
             }
 
-            //Moving Rocks 
+            ///Moving Rocks 
             if (randValue < 2)
             {
                 randomL = randGen.Next(20, 550);
@@ -160,45 +155,67 @@ namespace Asteroids
                 rockSpeedX.Add(randGen.Next(2, 5));
             }
 
-            //Interacts and Removing rocks
+            //Adding Bullets 
+            for (int i = 0; i < bullet.Count; i++)
+            {
+                int x = bullet[i].X + bulletSpeedX[i];
+                int y = bullet[i].Y + bulletSpeedY[i];
+                bullet[i] = new Rectangle();
+
+
+            }
+
+            Rectangle ship = new Rectangle((int)shipX, (int)shipY, 40, 40);
+
+            ///Interacts and Removing rocks
             for (int i = 0; i < rocks.Count; i++)
             {
+                
 
                 if (ship.IntersectsWith(rocks[i]))
                 {
                     rocks.RemoveAt(i);
-                    ship.X = 250;
-                    ship.Y = 250;
+                    shipX = 250;
+                    shipY = 250;
                     lives--;
                     score -= 50;
                 }
+                
 
-            }
+            } 
 
-            //Game Timer
-            time--;
-            if (time < 0)
+            
+
+            //Lives score
+            if (lives <= 0)
             {
                 gameTimer.Stop();
             }
 
+            //Game Timer
+             time--;
+            if (time < 0)
+            {
+                gameTimer.Stop();
+            }
             Refresh();
         }
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             //Rotate and Spawn ship image 
-            e.Graphics.TranslateTransform(ship.X - ship.Width / 2, ship.Y - ship.Height / 2);
-            e.Graphics.RotateTransform(turn);
-            e.Graphics.DrawImage(playerImage, 0,0 , ship.Width, ship.Height);
+            e.Graphics.TranslateTransform(shipX - 30 / 2, shipY - 40 / 2);
+            e.Graphics.RotateTransform(shipAngle);
+            e.Graphics.DrawImage(playerImage, 0, 0, 40, 40);
             e.Graphics.ResetTransform();
 
             //Draw Rocks
             for (int i = 0; i < rocks.Count; i++)
             {
                 e.Graphics.FillRectangle(whiteBrush, rocks[i]);
-                //e.Graphics.DrawImage
+                //e.Graphics.DrawImage(rocksImage);
 
-                
+
+
 
             }
 
