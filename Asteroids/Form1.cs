@@ -27,6 +27,10 @@ namespace Asteroids
         List<Rectangle> bullet = new List<Rectangle>();
         List<int> bulletSpeedX = new List<int>();
         List<int> bulletSpeedY = new List<int>();
+        double bXSpeed = 1;
+        double bYSpeed = 1;
+        float bThetaAngle = 0;
+        
 
         List<Rectangle> rocks = new List<Rectangle>();
         List<int> rockSpeedX = new List<int>();
@@ -53,6 +57,9 @@ namespace Asteroids
 
         Image playerImage = Properties.Resources.funnyShip;
         Image rocksImage = Properties.Resources.meteor;
+
+        //Start and End Screen
+        string gameState = "waiting";
 
         public Form1()
         {
@@ -160,18 +167,25 @@ namespace Asteroids
             {
                 int x = bullet[i].X + bulletSpeedX[i];
                 int y = bullet[i].Y + bulletSpeedY[i];
-                bullet[i] = new Rectangle();
-
+                bullet[i] = new Rectangle(x, y, 5, 12);
 
             }
 
             Rectangle ship = new Rectangle((int)shipX, (int)shipY, 40, 40);
 
+            if (spaceBar)
+            {
+                bullet.Add(new Rectangle((int)shipX, (int)shipY, 5, 12));
+                bulletSpeedX.Add(3 + (int)shipX);
+                bulletSpeedY.Add(3 - (int)shipY);
+                
+            }
+
+            
+
             ///Interacts and Removing rocks
             for (int i = 0; i < rocks.Count; i++)
             {
-                
-
                 if (ship.IntersectsWith(rocks[i]))
                 {
                     rocks.RemoveAt(i);
@@ -181,6 +195,16 @@ namespace Asteroids
                     score -= 50;
                 }
                 
+                
+                for (int t = 0, j = bullet.Count; t < j; t++)
+                {
+                    if (bullet[t].IntersectsWith(rocks[i]))
+                    {
+                        bullet.RemoveAt(t);
+                        rocks.RemoveAt(i);
+                        score += 100;
+                    }
+                }
 
             } 
 
@@ -211,8 +235,18 @@ namespace Asteroids
             //Draw Rocks
             for (int i = 0; i < rocks.Count; i++)
             {
-                e.Graphics.FillRectangle(whiteBrush, rocks[i]);
-                //e.Graphics.DrawImage(rocksImage);
+                //e.Graphics.FillRectangle(whiteBrush, rocks[i]);
+                e.Graphics.DrawImage(rocksImage, rocks[i]);
+
+
+
+
+            }
+
+            for (int i = 0; i < bullet.Count; i++)
+            {
+                e.Graphics.FillRectangle(whiteBrush, bullet[i]);
+                //e.Graphics.DrawImage(rocksImage, rocks[i]);
 
 
 
